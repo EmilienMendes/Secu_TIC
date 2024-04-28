@@ -1,0 +1,12 @@
+#!/bin/bash 
+# if [ "$#" -ne 1 ] || [ $1 = '-h' ]
+# then
+#     echo "$0 <image>"
+#     exit 1
+# fi
+
+# curl -v -F image=$1 http://localhost:8080/verification
+
+curl -v -F image=@../attestation.png http://localhost:8080/verification
+
+
