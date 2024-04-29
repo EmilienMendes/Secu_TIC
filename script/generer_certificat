@@ -2,17 +2,21 @@
 
 #Autorite de confiance
 
-openssl ecparam -out ../certificat/AC/ecc.ca.key.pem -name prime256v1 -genkey
+parent_folder='../certificat/AC'
 
-openssl req -config <(printf "[req]\ndistinguished_name=dn\n[dn]\n[ext]\nbasicConstraints=CA:TRUE") -new -nodes -subj "/C=FR/L=Limoges/O=CRYPTIS/OU=SecuTIC/CN=localhost" -x509 -extensions ext -sha256 -key ../certificat/AC/ecc.ca.key.pem -text -out ../certificat/AC/ecc.ca.cert.pem
+openssl ecparam -out $parent_folder/ecparam.pem -name prime256v1 
+
+openssl genpkey -paramfile $parent_folder/ecparam.pem -out $parent_folder/ecc.ca.key.pem -pass pass:"123456"
+
+openssl req -config <(printf "[req]\ndistinguished_name=dn\n[dn]\n[ext]\nbasicConstraints=CA:TRUE") -new -nodes -subj "/C=FR/L=Limoges/O=CRYPTIS/OU=SecuTIC/CN=localhost" -x509 -extensions ext -sha256 -key ${parent_folder}/ecc.ca.key.pem -text -out ${parent_folder}/ecc.ca.cert.pem
 
 # Generation certificat serveur
-openssl ecparam -out ../certificat/AC/ecc.serveur.key.pem -name prime256v1 -genkey
+openssl ecparam -out ${parent_folder}/ecc.serveur.key.pem -name prime256v1 -genkey
 
-openssl req -config <(printf "[req]\ndistinguished_name=dn\n[dn]\n[ext]\nbasicConstraints=CA:FALSE") -new -subj "/C=FR/L=Limoges/O=CRYPTIS/OU=SecuTIC/CN=localhost" -reqexts ext -sha256 -key ../certificat/AC/ecc.serveur.key.pem -text -out ../certificat/AC/ecc.csr.pem
+openssl req -config <(printf "[req]\ndistinguished_name=dn\n[dn]\n[ext]\nbasicConstraints=CA:FALSE") -new -subj "/C=FR/L=Limoges/O=CRYPTIS/OU=SecuTIC/CN=localhost" -reqexts ext -sha256 -key ${parent_folder}/ecc.serveur.key.pem -text -out ${parent_folder}/ecc.csr.pem
 
-openssl x509 -req -days 3650 -CA ../certificat/AC/ecc.ca.cert.pem -CAkey ../certificat/AC/ecc.ca.key.pem -CAcreateserial -extfile <(printf "basicConstraints=critical,CA:FALSE") -in ../certificat/AC/ecc.csr.pem -text -out ../certificat/AC/ecc.serveur.pem   
+openssl x509 -req -days 3650 -CA ${parent_folder}/ecc.ca.cert.pem -CAkey ${parent_folder}/ecc.ca.key.pem -CAcreateserial -extfile <(printf "basicConstraints=critical,CA:FALSE") -in ${parent_folder}/ecc.csr.pem -text -out ${parent_folder}/ecc.serveur.pem   
 
-openssl ec -in ../certificat/AC/ecc.serveur.key.pem -pubout -out ../certificat/AC/ecc.serveur.pub.pem
+openssl ec -in ${parent_folder}/ecc.serveur.key.pem -pubout -out ${parent_folder}/ecc.serveur.pub.pem
 
-cat ../certificat/AC/ecc.serveur.key.pem ../certificat/AC/ecc.serveur.pem > bundle_serveur.pem
+cat ${parent_folder}/ecc.serveur.key.pem ${parent_folder}/ecc.serveur.pem > ${parent_folder}/bundle_serveur.pem
