@@ -1,23 +1,22 @@
 #!/bin/bash 
-if [ "$#" -ne 2 ] || [ $1 = '-h' ]
+if [ "$#" -ne 3 ] || [ $1 = '-h' ]
 then
-    echo "$0 <identite> <intitule certificat>"
+    echo "$0 <nom> <prenom> <intitule certificat>"
     exit 1
 fi
 
-if [ -z "$1" ]
+if [ -z "$1" ] || [ -s "$2"]
 then
     echo "Identite non valide"
     exit 1
 fi
 
-if [ -z "$2" ]
+if [ -z "$3" ]
 then
     echo "Intitule certificat non valide"
     exit 1
 fi
 
+curl -k -v -X POST -d "identite=${1} ${2}" -d "intitule_certif=$3" --cacert ../certificat/AC/ecc.ca.cert.pem https://localhost:9000/creation
 
-# curl -X POST -d "identite=$1" -d "intitule_certif=$2" http://localhost:8080/creation
-
-curl -v -X POST -d "identite=$1" -d "intitule_certif=$2" --cacert ../certificat/AC/ecc.ca.cert.pem https://localhost:9000/creation
+curl -k -v -o ../mon_image.png  --cacert ../certificat/AC/ecc.ca.cert.pem https://localhost:9000/attestation

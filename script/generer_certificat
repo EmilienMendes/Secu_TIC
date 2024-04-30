@@ -6,7 +6,7 @@ parent_folder='../certificat/AC'
 
 openssl ecparam -out $parent_folder/ecparam.pem -name prime256v1 
 
-openssl genpkey -paramfile $parent_folder/ecparam.pem -out $parent_folder/ecc.ca.key.pem -pass pass:"123456"
+openssl genpkey -paramfile $parent_folder/ecparam.pem -out $parent_folder/ecc.ca.key.pem -pass pass:"CRYPTIS"
 
 openssl req -config <(printf "[req]\ndistinguished_name=dn\n[dn]\n[ext]\nbasicConstraints=CA:TRUE") -new -nodes -subj "/C=FR/L=Limoges/O=CRYPTIS/OU=SecuTIC/CN=localhost" -x509 -extensions ext -sha256 -key ${parent_folder}/ecc.ca.key.pem -text -out ${parent_folder}/ecc.ca.cert.pem
 

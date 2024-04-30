@@ -1,19 +1,17 @@
 #!/bin/bash
-# Utilisation : ./creer_image texte qrcode nom_fichier_sortie
+# Utilisation : ./creer_image nom prenom qrcode nom_fichier_sortie
 
 # Creation de l'image
-attestation="Attestion delivré à $1 "
-curl -o texte.png "https://dummyimage.com/600x400/ffffff/000000&text=$attestation&font=Arial-Bold"
-# Mise en format transparent
-convert $2 -transparent white $2
-convert texte.png -transparent white texte.png
-# Resize de l'image
-mogrify -resize 1000x600 texte.png
-mogrify -resize 100x100 $2
+attestation="Attestation de réussite\ndélivrée à $1 $2"
+
+curl -v -o image/fond_attestation.png  http://p-fb.net/fileadmin/fond_attestation.png 
+
+convert -size 1000x600 -gravity center -pointsize 56 label:"$attestation" -transparent white texte.png
+# Resize du qrcode
+mogrify -resize 100x100 $3
 
 composite -gravity center texte.png image/fond_attestation.png combinaison.png
-# composite -geometry +1418+934 $2 combinaison.png $3
-composite -geometry +1468+984 $2 combinaison.png $3
+composite -geometry +1468+984 $3 combinaison.png $4
 
 
 rm texte.png

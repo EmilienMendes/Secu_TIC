@@ -13,7 +13,6 @@ def supprimer_fichier(liste_fichier) :
 def extraire_image(nom_fichier_qr_code,nom_fichier_attestation) :
     attestation = Image.open(nom_fichier_attestation)
     qrImage = attestation.crop((1468,984,1468+110,984+110))
-    # qrImage = attestation.crop((1418,934,1418+210,934+210))
     qrImage.save(nom_fichier_qr_code, "PNG")
     attestation.close()
 
@@ -69,7 +68,7 @@ def création_attestation():
     if(len(contenu_identité) + len(contenu_intitulé_certification ) > 64 ) :
         return "Nom et identite ne peux pas dépasse 64 caractères !!"
     
-    nom_image = "attestation.png"
+    nom_image = "image/attestation.png"
     creation_image(contenu_identité+contenu_intitulé_certification,contenu_identité,nom_image)
 
     mon_image = Image.open(nom_image)
@@ -87,17 +86,19 @@ def création_attestation():
 
 @route('/verification', method='POST')
 def vérification_attestation():
-    nom_fichier_verifier = 'verification/attestation_a_verifier.png'
-    nom_fichier_qr_code = "verification/qrcoderecupere.png"
+    nom_fichier_verifier = 'image/attestation_a_verifier.png'
+    nom_fichier_qr_code = "image/qrcoderecupere.png"
+    nom_verification_signature = "image/sigature"
 
     nom_fichier_timestamp = "certificat/horodatage/file.tsq"
+    nom_fichier_requete_timestamp = "certificat/horodatage/file.tsr"
     taille_timestamp = 91
 
     contenu_image = request.files.get('image')
     contenu_image.save(nom_fichier_verifier,overwrite=True)
     
 
-    img_stegano = Image.open("attestation.png")
+    img_stegano = Image.open(contenu_image)
     longueur_message_recuperer = (64 + taille_timestamp) 
     message_recuperer = recuperer(img_stegano,longueur_message_recuperer)
     img_stegano.close()
@@ -112,32 +113,36 @@ def vérification_attestation():
     
     extraire_image(nom_fichier_qr_code,nom_fichier_verifier)
     donnes_qr_code = lire_qr_code(nom_fichier_qr_code)
-    with open("verification/signature.txt","wb") as f :
+    with open(nom_verification_signature,"wb") as f :
         f.write(base64.b64decode(donnes_qr_code[0]))
 
-    response.set_header('Content-type', 'text/plain')
+    certificat_correct = False 
 
-    sortie = subprocess.run("echo -n '%s' | openssl dgst -sha256 -verify certificat/AC/ecc.serveur.pub.pem -signature verification/signature.txt -binary"%(contenu_bloc),shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    sortie = subprocess.run("echo -n '%s' | openssl dgst -sha256 -verify certificat/AC/ecc.serveur.pub.pem -signature %s -binary"%(contenu_bloc,nom_verification_signature),shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     if(b"OK" in sortie.stdout) :
         with open(nom_fichier_timestamp,"wb") as f :
             for i in range(64,taille_timestamp+64) :
                 f.write(bytes([int(message_recuperer[i*8:(i+1)*8],2)]))
-        
+    
         verification = verification_horodatage(nom_fichier_timestamp).decode()
-        
-        supprimer_fichier([nom_fichier_timestamp])
         if("OK" in verification) :
-            return "Certificat correct ! \n"
+            certificat_correct = True
+
+    supprimer_fichier([nom_fichier_qr_code,nom_fichier_verifier,nom_fichier_timestamp,nom_fichier_requete_timestamp,nom_verification_signature])
+
+    response.set_header('Content-type', 'text/plain')
+
+    if certificat_correct :
+        return "Certification correct!\n"
     return "Certification erroné!\n"
 
-@route('/fond')
+@route('/attestation',method='GET')
 def récupérer_fond():
     response.set_header('Content-type', 'image/png')
-    descripteur_fichier = open('image/fond_attestation.png','rb')
+    descripteur_fichier = open('image/attestation.png','rb')
     contenu_fichier = descripteur_fichier.read()
     descripteur_fichier.close()
     return contenu_fichier
 
-subprocess.run("socat openssl-listen:9000,fork,cert=certificat/AC/bundle_serveur.pem,cafile=certificat/AC/ecc.ca.cert.pem,verify=0 tcp:127.0.0.1:8080",shell=True)
 run(host='0.0.0.0',port=8080,debug=True)
 
