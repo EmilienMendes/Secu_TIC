@@ -18,10 +18,11 @@ def extraire_image(nom_fichier_qr_code,nom_fichier_attestation) :
 
 # Creation de l'image avec le qr code
 def creation_image(bloc_information,identite,nom_fichier) :
-    nom_fichier_qr_code = "image/qrcode.png"
+    nom_fichier_qr_code = "qrcode.png"
     sortie = subprocess.run("echo -n  '%s' | openssl dgst -sha256 -sign certificat/AC/ecc.serveur.key.pem -binary "%bloc_information,shell=True,stdout=subprocess.PIPE)
     creer_qr_code(nom_fichier_qr_code, base64.b64encode(sortie.stdout))
     subprocess.run("./script/creer_image %s %s %s"%(identite,nom_fichier_qr_code,nom_fichier),shell=True)
+    supprimer_fichier([nom_fichier_qr_code])
 
 
 def certification_horodatage(image) :
@@ -68,7 +69,7 @@ def création_attestation():
     if(len(contenu_identité) + len(contenu_intitulé_certification ) > 64 ) :
         return "Nom et identite ne peux pas dépasse 64 caractères !!"
     
-    nom_image = "image/attestation.png"
+    nom_image = "attestation.png"
     creation_image(contenu_identité+contenu_intitulé_certification,contenu_identité,nom_image)
 
     mon_image = Image.open(nom_image)
@@ -86,9 +87,9 @@ def création_attestation():
 
 @route('/verification', method='POST')
 def vérification_attestation():
-    nom_fichier_verifier = 'image/attestation_a_verifier.png'
-    nom_fichier_qr_code = "image/qrcoderecupere.png"
-    nom_verification_signature = "image/sigature"
+    nom_fichier_verifier = 'attestation_a_verifier.png'
+    nom_fichier_qr_code = "qrcoderecupere.png"
+    nom_verification_signature = "sigature"
 
     nom_fichier_timestamp = "certificat/horodatage/file.tsq"
     nom_fichier_requete_timestamp = "certificat/horodatage/file.tsr"
@@ -96,9 +97,9 @@ def vérification_attestation():
 
     contenu_image = request.files.get('image')
     contenu_image.save(nom_fichier_verifier,overwrite=True)
-    
 
-    img_stegano = Image.open(contenu_image)
+    img_stegano = Image.open(nom_fichier_verifier)
+
     longueur_message_recuperer = (64 + taille_timestamp) 
     message_recuperer = recuperer(img_stegano,longueur_message_recuperer)
     img_stegano.close()
@@ -139,7 +140,8 @@ def vérification_attestation():
 @route('/attestation',method='GET')
 def récupérer_fond():
     response.set_header('Content-type', 'image/png')
-    descripteur_fichier = open('image/attestation.png','rb')
+    descripteur_fichier = open('attestation.png','rb')
+    supprimer_fichier(['attestation.png'])
     contenu_fichier = descripteur_fichier.read()
     descripteur_fichier.close()
     return contenu_fichier

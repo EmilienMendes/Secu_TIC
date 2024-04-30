@@ -4,18 +4,16 @@
 # Creation de l'image
 attestation="Attestation de réussite\ndélivrée à $1 $2"
 
-mkdir -p "image"
-
-curl -v -o image/fond_attestation.png  http://p-fb.net/fileadmin/fond_attestation.png 
+curl -v -o fond_attestation.png  http://p-fb.net/fileadmin/fond_attestation.png 
 
 convert -size 1000x600 -gravity center -pointsize 56 label:"$attestation" -transparent white texte.png
 # Resize du qrcode
 mogrify -resize 100x100 $3
 
-composite -gravity center texte.png image/fond_attestation.png combinaison.png
+composite -gravity center texte.png fond_attestation.png combinaison.png
 composite -geometry +1468+984 $3 combinaison.png $4
 
 
 rm texte.png
 rm combinaison.png
-
+rm fond_attestation.png

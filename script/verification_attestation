@@ -1,10 +1,10 @@
 #!/bin/bash 
 if [ "$#" -ne 1 ] || [ $1 = '-h' ]
 then
-    echo "$0 <image>"
+    echo "$0 <chemin de l'image>"
     exit 1
 fi
 
-curl -k -v -F image=$1 --cacert ../certificat/AC/ecc.ca.cert.pem  https://localhost:9000/verification
+curl -k -v -F image=@$1 --cacert ../certificat/AC/ecc.ca.cert.pem  https://localhost:9000/verification
 
 
