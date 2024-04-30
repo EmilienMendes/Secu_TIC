@@ -4,6 +4,8 @@
 # Creation de l'image
 attestation="Attestation de réussite\ndélivrée à $1 $2"
 
+mkdir -p "image"
+
 curl -v -o image/fond_attestation.png  http://p-fb.net/fileadmin/fond_attestation.png 
 
 convert -size 1000x600 -gravity center -pointsize 56 label:"$attestation" -transparent white texte.png
