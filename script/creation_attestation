@@ -5,7 +5,7 @@ then
     exit 1
 fi
 
-if [ -z "$1" ] || [ -s "$2"]
+if [ -z "$1" ] || [ -s "$2" ]
 then
     echo "Identite non valide"
     exit 1
