@@ -6,6 +6,7 @@ def vers_8bit(c):
     chaine_binaire = bin(ord(c))[2:]
     return "0"*(8-len(chaine_binaire))+chaine_binaire
 
+# Conversion des données en caractere
 def message_vers_binaire(message,bloc) :
     for b in bloc :
         message.append(vers_8bit(b))
@@ -50,6 +51,5 @@ def recuperer(image,taille):
                 posx_pixel = 0
                 posy_pixel += 1
         message += rep_binaire
-        # message += chr(int(rep_binaire, 2))
     return message
 
