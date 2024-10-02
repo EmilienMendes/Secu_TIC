@@ -1,0 +1,30 @@
+[ req ]
+default_bits = 4096
+default_keyfile = ca.key
+distinguished_name = req_distinguished_name
+x509_extensions = v3_ca
+string_mask = nombstr
+req_extensions = v3_req
+[ req_distinguished_name ]
+countryName = Country Name (2 letter code)
+countryName_default = FR
+countryName_min = 2
+countryName_max = 2
+stateOrProvinceName = State or Province Name (full name)
+stateOrProvinceName_default = FRANCE
+localityName = Locality Name (eg, city)
+localityName_default = Limoges
+0.organizationName = Organization Name (eg, company)
+0.organizationName_default = Master 1
+organizationalUnitName = Organizational Unit Name (eg, section)
+organizationalUnitName_default = Service de Certification
+commonName = Common Name (eg, Mon Autorite de Certification)
+commonName_default = Mon AC du Master 1
+commonName_max = 64
+emailAddress = Email Address (eg, celle du responsable)
+emailAddress_max = 40
+[ v3_ca ]
+basicConstraints = critical,CA:true
+subjectKeyIdentifier = hash
+[ v3_req ]
+nsCertType = email,server
